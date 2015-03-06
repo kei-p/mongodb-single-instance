@@ -14,7 +14,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     server.vm.provision "chef_solo" do |chef|
       chef.cookbooks_path = %w[./berks-cookbooks ./cookbooks]
       chef.roles_path = "roles"
-      chef.run_list = %w{role[webscale1_mongos] role[webscale1_config_server] role[webscale1_shard]}
+      chef.run_list = [
+        "recipe[mongodb::shard]",
+        "recipe[mongodb::replicaset]"
+      ]
     end
   end
 
