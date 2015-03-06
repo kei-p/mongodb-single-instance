@@ -12,18 +12,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define :mongo_shading_and_replica do |server|
     server.vm.network "private_network", ip: "192.168.33.10"
     server.vm.provision "chef_solo" do |chef|
-      chef.cookbooks_path = %w[./breks-cookbooks ./cookbooks]
+      chef.cookbooks_path = %w[./berks-cookbooks ./cookbooks]
       chef.roles_path = "roles"
-      # chef.run_list = %w{mongodb::replicaset}
-      # chef.json = {
-      #   mongodb: {
-      #     cluster_name: "test",
-      #     config: { replSet: "replica_test"},
-      #     replica_arbiter_only: true,
-      #     auto_configure: { replicaset: false }
-      #   }
-      # }
-
+      chef.run_list = %w{role[webscale1_mongos] role[webscale1_config_server] role[webscale1_shard]}
     end
   end
 

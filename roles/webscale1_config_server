@@ -1,0 +1,15 @@
+{
+    "name": "webscale1_configserver",
+    "default_attributes": {
+        "mongodb": {
+            "cluster_name": "webscale1"
+        }
+    },
+    "override_attributes": { },
+    "json_class": "Chef::Role",
+    "description": "webscale1 MongoDB configserver",
+    "chef_type": "role",
+    "run_list": [
+        "recipe[mongodb::configserver]"
+    ]
+}
