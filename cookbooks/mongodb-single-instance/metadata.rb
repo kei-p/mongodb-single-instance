@@ -1,4 +1,4 @@
-name             'mongodb_on_single_server'
+name             'mongodb-single-instance'
 maintainer       'YOUR_COMPANY_NAME'
 maintainer_email 'YOUR_EMAIL'
 license          'All rights reserved'
