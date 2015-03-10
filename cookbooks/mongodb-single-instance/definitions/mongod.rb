@@ -17,14 +17,14 @@ define :mongod_instance,
   new_resource.dbconfig_file_template     = node['mongodb']['dbconfig_file_template']
 
   identifier = params[:identifier]
-  name = 'mongodb-%s' % identifier
+  name = identifier ? 'mongod-%s' % identifier : 'mongod'
   new_resource.dbconfig_file              = '/etc/%s.conf' % name
 
   config = {}
   config = config.merge(node['mongodb']['config'])
   config['port'] = params[:port]
   config['logpath'] = '/var/log/mongodb/%s.log' % name
-  config['dbpath'] = '/var/lib/mongodb/%s' % identifier
+  config['dbpath'] = '/var/lib/mongodb/%s' % name
   config['pidfilepath'] = '/var/run/mongodb/%s.pid' % name
   new_resource.config = config
 
