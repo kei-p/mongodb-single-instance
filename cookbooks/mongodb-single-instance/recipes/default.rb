@@ -11,25 +11,24 @@ include_recipe 'mongodb::install'
 include_recipe 'mongodb::mongo_gem'
 
 configsvr_instance "configsvr" do
-  port 27200
+  port node['mongod_single']['configsvr']['port']
 end
 
-mongod_instance "mongod-sh0" do
-  port 27300
-  identifier 'sh0'
-end
+node['mongod_single']['replicasets'].each do |replica|
+  replica['members'].each_with_index do |member, i|
 
-mongod_instance "mongod-sh1" do
-  port 27301
-  identifier 'sh1'
-end
+    id = "rs_" + replica['name'] + "-#{i}"
 
-mongod_instance "mongod-sh2" do
-  port 27302
-  identifier 'sh2'
+    mongod_instance "mongod-#{id}" do
+      port member['port']
+      opts member['opts']
+      identifier id
+    end
+
+  end
 end
 
 mongos_instance "mongos" do
-  port 27100
-  configdb "localhost:27200"
+  port node['mongod_single']['mongos']['port']
+  configdb "localhost:#{node['mongod_single']['configsvr']['port']}"
 end
