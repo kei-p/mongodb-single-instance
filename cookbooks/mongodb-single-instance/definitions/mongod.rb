@@ -26,6 +26,8 @@ define :mongod_instance,
   config['logpath'] = '/var/log/mongodb/%s.log' % name
   config['dbpath'] = '/var/lib/mongodb/%s' % name
   config['pidfilepath'] = '/var/run/mongodb/%s.pid' % name
+  config['replSet'] = params[:replicaset_name]
+  config['arbiterOnly'] = "true" if params[:opts] && params[:opts]['arbiterOnly']
   new_resource.config = config
 
   new_resource.dbpath = config['dbpath']
@@ -34,20 +36,19 @@ define :mongod_instance,
   new_resource.sysconfig_file             = node['mongodb']['sysconfig_file']
   new_resource.sysconfig_file_template    = node['mongodb']['sysconfig_file_template']
 
+
+  new_resource.is_shard                   = true
+  new_resource.is_replicaset              = true
+
+  new_resource.replicaset_name            = config['replSet']
+
   new_resource.bind_ip                    = node['mongodb']['config']['bind_ip']
   new_resource.cluster_name               = node['mongodb']['cluster_name']
   new_resource.init_dir                   = node['mongodb']['init_dir']
   new_resource.init_script_template       = node['mongodb']['init_script_template']
-  # new_resource.is_replicaset              = node['mongodb']['is_replicaset']
-  # new_resource.is_shard                   = node['mongodb']['is_shard']
-  # new_resource.is_configserver            = node['mongodb']['is_configserver']
-  # new_resource.is_mongos                  = node['mongodb']['is_mongos']
   new_resource.mongodb_group              = node['mongodb']['group']
   new_resource.mongodb_user               = node['mongodb']['user']
-  new_resource.replicaset_name            = node['mongodb']['config']['replSet']
   new_resource.root_group                 = node['mongodb']['root_group']
-  # new_resource.shard_name                 = node['mongodb']['shard_name']
-  # new_resource.sharded_collections        = node['mongodb']['sharded_collections']
   new_resource.sysconfig_file             = node['mongodb']['sysconfig_file']
   new_resource.sysconfig_vars             = node['mongodb']['sysconfig']
   new_resource.template_cookbook          = node['mongodb']['template_cookbook']
