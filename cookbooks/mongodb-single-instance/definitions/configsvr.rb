@@ -1,5 +1,5 @@
 
-define :mongod_instance,
+define :configsvr_instance,
        :action        => [:enable, :start],
        :notifies      => [] do
 
@@ -15,9 +15,8 @@ define :mongod_instance,
   new_resource.service_notifies           = params[:notifies]
 
   new_resource.dbconfig_file_template     = node['mongodb']['dbconfig_file_template']
-
   identifier = params[:identifier]
-  name = identifier ? 'mongod-%s' % identifier : 'mongod'
+  name = identifier ? 'configsvr-%s' % identifier : 'configsvr'
   new_resource.dbconfig_file              = '/etc/%s.conf' % name
 
   config = {}
@@ -26,6 +25,7 @@ define :mongod_instance,
   config['logpath'] = '/var/log/mongodb/%s.log' % name
   config['dbpath'] = '/var/lib/mongodb/%s' % name
   config['pidfilepath'] = '/var/run/mongodb/%s.pid' % name
+  config['configsvr']   = true
   new_resource.config = config
 
   new_resource.dbpath = config['dbpath']
@@ -40,7 +40,6 @@ define :mongod_instance,
   new_resource.init_script_template       = node['mongodb']['init_script_template']
   # new_resource.is_replicaset              = node['mongodb']['is_replicaset']
   # new_resource.is_shard                   = node['mongodb']['is_shard']
-  # new_resource.is_configserver            = node['mongodb']['is_configserver']
   # new_resource.is_mongos                  = node['mongodb']['is_mongos']
   new_resource.mongodb_group              = node['mongodb']['group']
   new_resource.mongodb_user               = node['mongodb']['user']

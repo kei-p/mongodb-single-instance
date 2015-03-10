@@ -1,9 +1,10 @@
 
-define :mongod_instance,
+define :mongos_instance,
+       :configdb => "",
        :action        => [:enable, :start],
        :notifies      => [] do
 
-  provider = 'mongod'
+  provider = 'mongos'
 
   require 'ostruct'
 
@@ -15,39 +16,33 @@ define :mongod_instance,
   new_resource.service_notifies           = params[:notifies]
 
   new_resource.dbconfig_file_template     = node['mongodb']['dbconfig_file_template']
-
   identifier = params[:identifier]
-  name = identifier ? 'mongod-%s' % identifier : 'mongod'
+  name = identifier ? 'mongos-%s' % identifier : 'mongos'
   new_resource.dbconfig_file              = '/etc/%s.conf' % name
 
   config = {}
-  config = config.merge(node['mongodb']['config'])
   config['port'] = params[:port]
   config['logpath'] = '/var/log/mongodb/%s.log' % name
-  config['dbpath'] = '/var/lib/mongodb/%s' % name
   config['pidfilepath'] = '/var/run/mongodb/%s.pid' % name
+  config['configdb'] = params[:configdb]
+  config['fork'] = true
   new_resource.config = config
 
-  new_resource.dbpath = config['dbpath']
   new_resource.logpath = config['logpath']
 
   new_resource.sysconfig_file             = node['mongodb']['sysconfig_file']
   new_resource.sysconfig_file_template    = node['mongodb']['sysconfig_file_template']
 
+  new_resource.is_mongos                  = true
+
   new_resource.bind_ip                    = node['mongodb']['config']['bind_ip']
   new_resource.cluster_name               = node['mongodb']['cluster_name']
   new_resource.init_dir                   = node['mongodb']['init_dir']
   new_resource.init_script_template       = node['mongodb']['init_script_template']
-  # new_resource.is_replicaset              = node['mongodb']['is_replicaset']
-  # new_resource.is_shard                   = node['mongodb']['is_shard']
-  # new_resource.is_configserver            = node['mongodb']['is_configserver']
-  # new_resource.is_mongos                  = node['mongodb']['is_mongos']
   new_resource.mongodb_group              = node['mongodb']['group']
   new_resource.mongodb_user               = node['mongodb']['user']
   new_resource.replicaset_name            = node['mongodb']['config']['replSet']
   new_resource.root_group                 = node['mongodb']['root_group']
-  # new_resource.shard_name                 = node['mongodb']['shard_name']
-  # new_resource.sharded_collections        = node['mongodb']['sharded_collections']
   new_resource.sysconfig_file             = node['mongodb']['sysconfig_file']
   new_resource.sysconfig_vars             = node['mongodb']['sysconfig']
   new_resource.template_cookbook          = node['mongodb']['template_cookbook']
@@ -71,9 +66,9 @@ define :mongod_instance,
     mode '0644'
     variables(
       :sysconfig => {
-        DAEMON: '/usr/bin/mongod',
+        DAEMON: '/usr/bin/mongos',
         DAEMON_USER: new_resource.user,
-        DAEMON_OPTS: "--config #{new_resource.dbconfig_file}",
+        DAEMON_OPTS: " --config #{new_resource.dbconfig_file}",
         CONFIGFILE: new_resource.dbconfig_file,
         ENABLE_MONGODB: "yes"
       }
@@ -104,16 +99,6 @@ define :mongod_instance,
       action :create
       recursive true
     end
-  end
-
-  # dbpath dir [make sure it exists]
-  directory new_resource.dbpath do
-    owner new_resource.mongodb_user
-    group new_resource.mongodb_group
-    mode '0755'
-    action :create
-    recursive true
-    not_if { new_resource.is_mongos }
   end
 
   # Reload systemctl for RHEL 7+ after modifying the init file.
@@ -152,8 +137,32 @@ define :mongod_instance,
     new_resource.service_notifies.each do |service_notify|
       notifies :run, service_notify
     end
-      # we don't care about a running mongodb service in these cases, all we need is stopping it
+    notifies :create, 'ruby_block[config_replicaset]', :immediately
+    notifies :create, 'ruby_block[config_sharding]', :immediately
+    # we don't care about a running mongodb service in these cases, all we need is stopping it
     ignore_failure true if new_resource.name == 'mongodb'
+  end
+
+  # replicaset
+  ruby_block 'config_replicaset' do
+    block do
+      # MongoDB.configure_replicaset(new_resource.replicaset, replicaset_name, rs_nodes) unless new_resource.replicaset.nil?
+    end
+    action :nothing
+  end
+
+  ruby_block 'run_config_replicaset' do
+    block {}
+    notifies :create, 'ruby_block[config_replicaset]'
+  end
+
+  #shading
+  ruby_block 'config_sharding' do
+    block do
+      # MongoDB.configure_shards(node, shard_nodes)
+      # MongoDB.configure_sharded_collections(node, new_resource.sharded_collections)
+    end
+    action :nothing
   end
 
 
