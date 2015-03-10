@@ -17,10 +17,12 @@ end
 node['mongod_single']['replicasets'].each do |replica|
   replica['members'].each_with_index do |member, i|
 
-    id = "rs_" + replica['name'] + "-#{i}"
+    rplc_name = "rs_" + replica["name"]
+    id = rplc_name + "-#{i}"
 
     mongod_instance "mongod-#{id}" do
       port member['port']
+      replicaset_name rplc_name
       opts member['opts']
       identifier id
     end

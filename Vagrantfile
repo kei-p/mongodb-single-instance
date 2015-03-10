@@ -28,7 +28,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             {
               name: "0",
               members: [
-                { port: 27200, opts: { replica_aribiter_only: true } },
+                { port: 27200, opts: { arbiterOnly: true } },
                 { port: 27201 },
                 { port: 27202 }
               ]
