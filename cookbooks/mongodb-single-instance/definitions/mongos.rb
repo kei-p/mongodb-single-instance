@@ -146,21 +146,16 @@ define :mongos_instance,
   # replicaset
   ruby_block 'config_replicaset' do
     block do
-      # MongoDB.configure_replicaset(new_resource.replicaset, replicaset_name, rs_nodes) unless new_resource.replicaset.nil?
+      MongoDBSingle.configure_replicaset(node['mongod_single'])
     end
     action :nothing
-  end
-
-  ruby_block 'run_config_replicaset' do
-    block {}
-    notifies :create, 'ruby_block[config_replicaset]'
   end
 
   #shading
   ruby_block 'config_sharding' do
     block do
-      # MongoDB.configure_shards(node, shard_nodes)
-      # MongoDB.configure_sharded_collections(node, new_resource.sharded_collections)
+      MongoDBSingle.configure_shards(node['mongod_single'])
+      MongoDBSingle.configure_sharded_collections(node['mongod_single'])
     end
     action :nothing
   end
