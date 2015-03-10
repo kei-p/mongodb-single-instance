@@ -1,5 +1,6 @@
 
 define :mongos_instance,
+       :configdb => "",
        :action        => [:enable, :start],
        :notifies      => [] do
 
@@ -20,14 +21,13 @@ define :mongos_instance,
   new_resource.dbconfig_file              = '/etc/%s.conf' % name
 
   config = {}
-  config = config.merge(node['mongodb']['config'])
   config['port'] = params[:port]
   config['logpath'] = '/var/log/mongodb/%s.log' % name
-  config['dbpath'] = '/var/lib/mongodb/%s' % name
   config['pidfilepath'] = '/var/run/mongodb/%s.pid' % name
+  config['configdb'] = params[:configdb]
+  config['fork'] = true
   new_resource.config = config
 
-  new_resource.dbpath = config['dbpath']
   new_resource.logpath = config['logpath']
 
   new_resource.sysconfig_file             = node['mongodb']['sysconfig_file']
@@ -66,9 +66,9 @@ define :mongos_instance,
     mode '0644'
     variables(
       :sysconfig => {
-        DAEMON: '/usr/bin/mongod',
+        DAEMON: '/usr/bin/mongos',
         DAEMON_USER: new_resource.user,
-        DAEMON_OPTS: "--config #{new_resource.dbconfig_file}",
+        DAEMON_OPTS: " --config #{new_resource.dbconfig_file}",
         CONFIGFILE: new_resource.dbconfig_file,
         ENABLE_MONGODB: "yes"
       }
@@ -99,16 +99,6 @@ define :mongos_instance,
       action :create
       recursive true
     end
-  end
-
-  # dbpath dir [make sure it exists]
-  directory new_resource.dbpath do
-    owner new_resource.mongodb_user
-    group new_resource.mongodb_group
-    mode '0755'
-    action :create
-    recursive true
-    not_if { new_resource.is_mongos }
   end
 
   # Reload systemctl for RHEL 7+ after modifying the init file.

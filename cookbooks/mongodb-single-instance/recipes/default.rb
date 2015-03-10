@@ -29,6 +29,7 @@ mongod_instance "mongod-sh2" do
   identifier 'sh2'
 end
 
-# mongos_instance node['mongodb']['instance_name'] do
-#   port 27100
-# end
+mongos_instance "mongos" do
+  port 27100
+  configdb "localhost:27200"
+end
