@@ -146,7 +146,7 @@ define :mongos_instance,
   # replicaset
   ruby_block 'config_replicaset' do
     block do
-      MongoDBSingle.configure_replicaset(node['mongod_single'])
+      MongoDBSingle.configure_replicaset(node, node['mongod_single'])
     end
     action :nothing
   end
@@ -154,8 +154,8 @@ define :mongos_instance,
   #shading
   ruby_block 'config_sharding' do
     block do
-      MongoDBSingle.configure_shards(node['mongod_single'])
-      MongoDBSingle.configure_sharded_collections(node['mongod_single'])
+      MongoDBSingle.configure_shards(node, node['mongod_single'])
+      MongoDBSingle.configure_sharded_collections(node, node['mongod_single'])
     end
     action :nothing
   end

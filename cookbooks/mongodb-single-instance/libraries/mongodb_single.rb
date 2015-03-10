@@ -22,22 +22,65 @@
 require 'json'
 
 class Chef::ResourceDefinitionList::MongoDBSingle
-  def self.configure_replicaset(mongod_single)
+  def self.configure_replicaset(node, mongod_single)
     require 'ostruct'
 
-    p ">>>>>>>> replica"
+    mongos = OpenStruct.new
+    mongos.name = node.name
+    mongos.fqdn = node["fqdn"]
+    mongos.mongodb = {
+      "config" => { "port" => mongod_single['mongos']['port'] },
+      "replica_slave_delay" =>  0,
+      "replica_tags" => {}
+    }
 
-    # Chef::ResourceDefinitionList::MongoDB.configure_replicaset(nil,nil,nil)
+    mongod_single['replicasets'].each do |replica|
+        name = "rs_" + replica['name']
+
+        members = []
+        replica["members"].each_with_index do |member, i|
+          m = OpenStruct.new
+          m.fqdn = node['fqdn']
+          m.name = name + "-#{i}"
+          mongodb = { "config" => { "port" => member["port"] } }
+
+          mongodb["replica_arbiter_only"] = true if member["opts"] &&  member["opts"]["arbiterOnly"]
+          mongodb["replica_slave_delay"] =  member["opts"] &&  member["opts"]["slaveDelay"] ? member["opts"]["slaveDelay"] : 0
+          mongodb["replica_tags"] =  member["opts"] &&  member["opts"]["replicaTags"] ? member["opts"]["replicaTags"] : {}
+
+          m["mongodb"] = mongodb
+
+          members << m
+        end
+
+      Chef::ResourceDefinitionList::MongoDB.configure_replicaset(mongos, name, members)
+
+    end
+
   end
 
-  def self.configure_shards(mongod_single)
+  def self.configure_shards(node, mongod_single)
     require 'ostruct'
     p ">>>>>>>> shard"
+    mongos = OpenStruct.new
+    mongos.name = node.name
+    mongos.fqdn = node["fqdn"]
+    mongos.mongodb = {
+      config: { port: mongod_single['mongos']['port'] }
+    }
+
   end
 
-  def self.configure_sharded_collections(mongod_single)
+  def self.configure_sharded_collections(node, mongod_single)
     require 'ostruct'
     p ">>>>>>>> shard collections"
+    mongos = OpenStruct.new
+    mongos.name = node.name
+    mongos.fqdn = node["fqdn"]
+    mongos.mongodb = {
+      config: { port: mongod_single['mongos']['port'] }
+    }
+
   end
 
 end
