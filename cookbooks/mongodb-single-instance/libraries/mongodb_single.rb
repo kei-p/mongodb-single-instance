@@ -25,37 +25,37 @@ class Chef::ResourceDefinitionList::MongoDBSingle
   def self.configure_replicaset(node, mongod_single)
     require 'ostruct'
 
-    mongos = OpenStruct.new
-    mongos.name = node.name
-    mongos.fqdn = node["fqdn"]
-    mongos.mongodb = {
-      "config" => { "port" => mongod_single['mongos']['port'] },
-      "replica_slave_delay" =>  0,
-      "replica_tags" => {}
-    }
-
-    mongod_single['replicasets'].each do |replica|
-        name = "rs_" + replica['name']
-
-        members = []
-        replica["members"].each_with_index do |member, i|
-          m = OpenStruct.new
-          m.fqdn = node['fqdn']
-          m.name = name + "-#{i}"
-          mongodb = { "config" => { "port" => member["port"] } }
-
-          mongodb["replica_arbiter_only"] = true if member["opts"] &&  member["opts"]["arbiterOnly"]
-          mongodb["replica_slave_delay"] =  member["opts"] &&  member["opts"]["slaveDelay"] ? member["opts"]["slaveDelay"] : 0
-          mongodb["replica_tags"] =  member["opts"] &&  member["opts"]["replicaTags"] ? member["opts"]["replicaTags"] : {}
-
-          m["mongodb"] = mongodb
-
-          members << m
-        end
-
-      Chef::ResourceDefinitionList::MongoDB.configure_replicaset(mongos, name, members)
-
-    end
+    # mongos = OpenStruct.new
+    # mongos.name = node.name
+    # mongos.fqdn = node["fqdn"]
+    # mongos.mongodb = {
+    #   "config" => { "port" => mongod_single['mongos']['port'] },
+    #   "replica_slave_delay" =>  0,
+    #   "replica_tags" => {}
+    # }
+    #
+    # mongod_single['replicasets'].each do |replica|
+    #     name = "rs_" + replica['name']
+    #
+    #     members = []
+    #     replica["members"].each_with_index do |member, i|
+    #       m = OpenStruct.new
+    #       m.fqdn = node['fqdn']
+    #       m.name = name + "-#{i}"
+    #       mongodb = { "config" => { "port" => member["port"] } }
+    #
+    #       mongodb["replica_arbiter_only"] = true if member["opts"] &&  member["opts"]["arbiterOnly"]
+    #       mongodb["replica_slave_delay"] =  member["opts"] &&  member["opts"]["slaveDelay"] ? member["opts"]["slaveDelay"] : 0
+    #       mongodb["replica_tags"] =  member["opts"] &&  member["opts"]["replicaTags"] ? member["opts"]["replicaTags"] : {}
+    #
+    #       m["mongodb"] = mongodb
+    #
+    #       members << m
+    #     end
+    #
+    #   Chef::ResourceDefinitionList::MongoDB.configure_replicaset(mongos, name, members)
+    #
+    # end
 
   end
 
@@ -66,8 +66,27 @@ class Chef::ResourceDefinitionList::MongoDBSingle
     mongos.name = node.name
     mongos.fqdn = node["fqdn"]
     mongos.mongodb = {
-      config: { port: mongod_single['mongos']['port'] }
+      "config" => { "port" => mongod_single['mongos']['port'] }
     }
+
+    shard_nodes = []
+    mongod_single['replicasets'].each do |replica|
+      name = replica['name']
+
+      replica["members"].each_with_index do |member, i|
+        n = {}
+        n["fqdn"] = node["fqdn"]
+        n["recipes"] = [ "mongodb::replicaset" ]
+        mongodb = { "config" => { "port" => member["port"] } }
+        mongodb["shard_name"] = name
+
+        n["mongodb"] = mongodb
+
+        shard_nodes << n
+      end
+    end
+
+    Chef::ResourceDefinitionList::MongoDB.configure_shards(mongos, shard_nodes)
 
   end
 

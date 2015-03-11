@@ -65,7 +65,7 @@ db.runCommand( { addShard: "repl0/mongodb3.example.net:27327"} )
 ```
 node:
 {
-    	“fqdn”: "192.168.0.1"
+    	fqdn: "192.168.0.1"
 	mongodb:{
 		config:{
 			port: 20000,
@@ -76,7 +76,7 @@ node:
 shard_nodes: 
 [
 {
-	“fqdn”
+	fqdn:"192.168.0.1"
 	mongodb:{
 		config:{
 			port: 20000,
