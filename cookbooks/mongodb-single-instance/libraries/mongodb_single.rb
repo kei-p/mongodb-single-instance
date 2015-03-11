@@ -22,7 +22,7 @@
 require 'json'
 
 class Chef::ResourceDefinitionList::MongoDBSingle
-  def self.configure_replicaset(node, mongod_single)
+  def self.configure_replicaset(mongod_single)
     require 'ostruct'
 
     # mongos = OpenStruct.new

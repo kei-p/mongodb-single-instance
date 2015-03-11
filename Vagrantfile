@@ -33,7 +33,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
               name: "0",
               members: [
                 { port: 27200, opts: { arbiterOnly: true } },
-                { port: 27201 },
+                { port: 27201, primary: true },
                 { port: 27202 }
               ]
             }

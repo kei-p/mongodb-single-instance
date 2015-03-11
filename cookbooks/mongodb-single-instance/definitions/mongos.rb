@@ -138,19 +138,11 @@ define :mongos_instance,
     new_resource.service_notifies.each do |service_notify|
       notifies :run, service_notify
     end
-    notifies :create, 'ruby_block[config_replicaset]', :immediately
     notifies :create, 'ruby_block[config_sharding]', :immediately
     # we don't care about a running mongodb service in these cases, all we need is stopping it
     ignore_failure true if new_resource.name == 'mongodb'
   end
 
-  # replicaset
-  ruby_block 'config_replicaset' do
-    block do
-      # MongoDBSingle.configure_replicaset(node, node['mongod_single'])
-    end
-    action :nothing
-  end
 
   #shading
   ruby_block 'config_sharding' do

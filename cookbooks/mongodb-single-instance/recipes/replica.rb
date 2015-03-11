@@ -7,3 +7,7 @@
 # All rights reserved - Do Not Redistribute
 #
 
+# replicaset
+replicasets_setup "" do
+end
+
