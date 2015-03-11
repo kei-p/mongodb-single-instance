@@ -30,11 +30,30 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           },
           replicasets: [
             {
-              name: "0",
+              name: "sh0",
               members: [
                 { port: 27200, opts: { arbiterOnly: true } },
                 { port: 27201, primary: true },
-                { port: 27202 }
+                { port: 27202 },
+                { port: 27203 }
+              ]
+            },
+            {
+              name: "sh1",
+              members: [
+                { port: 27210, opts: { arbiterOnly: true } },
+                { port: 27211, primary: true },
+                { port: 27212 },
+                { port: 27213 }
+              ]
+            },
+            {
+              name: "sh2",
+              members: [
+                { port: 27220, opts: { arbiterOnly: true } },
+                { port: 27221, primary: true },
+                { port: 27222 },
+                { port: 27223 }
               ]
             }
           ],

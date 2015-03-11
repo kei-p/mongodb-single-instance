@@ -4,7 +4,7 @@ define :replicasets_setup,
 
   ruby_block 'config_replicasets' do
     block do
-      MongoDBSingle.configure_replicaset(node['mongod_single'])
+      MongoDBSingle.configure_replicaset(node, node['mongod_single'])
     end
     action :run
   end

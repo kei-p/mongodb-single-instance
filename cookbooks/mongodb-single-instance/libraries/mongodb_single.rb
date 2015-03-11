@@ -22,40 +22,37 @@
 require 'json'
 
 class Chef::ResourceDefinitionList::MongoDBSingle
-  def self.configure_replicaset(mongod_single)
+  def self.configure_replicaset(node, mongod_single)
     require 'ostruct'
+    p ">>>>>>>> replicasets"
 
-    # mongos = OpenStruct.new
-    # mongos.name = node.name
-    # mongos.fqdn = node["fqdn"]
-    # mongos.mongodb = {
-    #   "config" => { "port" => mongod_single['mongos']['port'] },
-    #   "replica_slave_delay" =>  0,
-    #   "replica_tags" => {}
-    # }
-    #
-    # mongod_single['replicasets'].each do |replica|
-    #     name = "rs_" + replica['name']
-    #
-    #     members = []
-    #     replica["members"].each_with_index do |member, i|
-    #       m = OpenStruct.new
-    #       m.fqdn = node['fqdn']
-    #       m.name = name + "-#{i}"
-    #       mongodb = { "config" => { "port" => member["port"] } }
-    #
-    #       mongodb["replica_arbiter_only"] = true if member["opts"] &&  member["opts"]["arbiterOnly"]
-    #       mongodb["replica_slave_delay"] =  member["opts"] &&  member["opts"]["slaveDelay"] ? member["opts"]["slaveDelay"] : 0
-    #       mongodb["replica_tags"] =  member["opts"] &&  member["opts"]["replicaTags"] ? member["opts"]["replicaTags"] : {}
-    #
-    #       m["mongodb"] = mongodb
-    #
-    #       members << m
-    #     end
-    #
-    #   Chef::ResourceDefinitionList::MongoDB.configure_replicaset(mongos, name, members)
-    #
-    # end
+    mongod_single['replicasets'].each do |replica|
+        name = "rs_" + replica['name']
+
+        primary = nil
+        members = []
+        replica["members"].each_with_index do |member, i|
+          m = OpenStruct.new
+          m.fqdn = node['fqdn']
+          m.name = name + "-#{i}"
+          mongodb = { "config" => { "port" => member["port"] } }
+          ## options
+          mongodb["replica_arbiter_only"] = true if member["opts"] &&  member["opts"]["arbiterOnly"]
+          mongodb["replica_slave_delay"] =  member["opts"] &&  member["opts"]["slaveDelay"] ? member["opts"]["slaveDelay"] : 0
+          mongodb["replica_tags"] =  member["opts"] &&  member["opts"]["replicaTags"] ? member["opts"]["replicaTags"] : {}
+          mongodb["replica_votes"] =  member["opts"] &&  member["opts"]["votes"] ? member["opts"]["votes"] : 1
+          mongodb["replica_build_indexes"] =  member["opts"] &&  member["opts"]["buildIndexes"] ? member["opts"]["buildIndexes"] : true
+          mongodb["replica_priority"] =  member["opts"] &&  member["opts"]["priority"] ? member["opts"]["priority"] : 1
+
+          m["mongodb"] = mongodb
+
+          members << m
+          primary = m if member['primary']
+        end
+
+      Chef::ResourceDefinitionList::MongoDB.configure_replicaset(primary, name, members)
+
+    end
 
   end
 
@@ -84,9 +81,9 @@ class Chef::ResourceDefinitionList::MongoDBSingle
 
         shard_nodes << n
       end
-    end
 
-    Chef::ResourceDefinitionList::MongoDB.configure_shards(mongos, shard_nodes)
+      Chef::ResourceDefinitionList::MongoDB.configure_shards(mongos, shard_nodes)
+    end
 
   end
 
