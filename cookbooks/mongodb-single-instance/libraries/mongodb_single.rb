@@ -97,8 +97,12 @@ class Chef::ResourceDefinitionList::MongoDBSingle
     mongos.name = node.name
     mongos.fqdn = node["fqdn"]
     mongos.mongodb = {
-      config: { port: mongod_single['mongos']['port'] }
+      "config" => { "port" => mongod_single['mongos']['port'] }
     }
+
+    collections = mongod_single['shard_collections']
+
+    Chef::ResourceDefinitionList::MongoDB.configure_sharded_collections(mongos, collections)
 
   end
 

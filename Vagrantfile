@@ -34,8 +34,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 { port: 27202 }
               ]
             }
-          ]
-
+          ],
+          shard_collections: {
+            "test.addressbook" => "name",
+            "mydatabase.calendar" => "date"
+          }
         }
       }
     end
