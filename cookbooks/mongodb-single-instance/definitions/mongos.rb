@@ -26,6 +26,7 @@ define :mongos_instance,
   config['pidfilepath'] = '/var/run/mongodb/%s.pid' % name
   config['configdb'] = params[:configdb]
   config['fork'] = true
+  config['chunkSize'] = node['mongod_single']['mongos']['chunkSize']
   new_resource.config = config
 
   new_resource.logpath = config['logpath']

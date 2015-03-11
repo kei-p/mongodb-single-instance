@@ -19,7 +19,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       chef.json = {
         mongod_single: {
           mongos: {
-            port: 27100
+            port: 27100,
+            chunkSize: 1
           },
           configsvr: {
             port: 27101
