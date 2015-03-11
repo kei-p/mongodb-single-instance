@@ -1,2 +1,4 @@
 .vagrant
 berks-cookbooks/
+
+*.swp

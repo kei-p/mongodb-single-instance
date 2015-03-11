@@ -10,10 +10,6 @@
 include_recipe 'mongodb::install'
 include_recipe 'mongodb::mongo_gem'
 
-configsvr_instance "configsvr" do
-  port node['mongod_single']['configsvr']['port']
-end
-
 node['mongod_single']['replicasets'].each do |replica|
   replica['members'].each_with_index do |member, i|
 
@@ -30,7 +26,3 @@ node['mongod_single']['replicasets'].each do |replica|
   end
 end
 
-mongos_instance "mongos" do
-  port node['mongod_single']['mongos']['port']
-  configdb "localhost:#{node['mongod_single']['configsvr']['port']}"
-end

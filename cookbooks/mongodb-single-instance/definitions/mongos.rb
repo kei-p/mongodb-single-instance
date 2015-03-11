@@ -26,6 +26,7 @@ define :mongos_instance,
   config['pidfilepath'] = '/var/run/mongodb/%s.pid' % name
   config['configdb'] = params[:configdb]
   config['fork'] = true
+  config['chunkSize'] = node['mongod_single']['mongos']['chunkSize']
   new_resource.config = config
 
   new_resource.logpath = config['logpath']
@@ -137,30 +138,17 @@ define :mongos_instance,
     new_resource.service_notifies.each do |service_notify|
       notifies :run, service_notify
     end
-    notifies :create, 'ruby_block[config_replicaset]', :immediately
     notifies :create, 'ruby_block[config_sharding]', :immediately
     # we don't care about a running mongodb service in these cases, all we need is stopping it
     ignore_failure true if new_resource.name == 'mongodb'
   end
 
-  # replicaset
-  ruby_block 'config_replicaset' do
-    block do
-      # MongoDB.configure_replicaset(new_resource.replicaset, replicaset_name, rs_nodes) unless new_resource.replicaset.nil?
-    end
-    action :nothing
-  end
-
-  ruby_block 'run_config_replicaset' do
-    block {}
-    notifies :create, 'ruby_block[config_replicaset]'
-  end
 
   #shading
   ruby_block 'config_sharding' do
     block do
-      # MongoDB.configure_shards(node, shard_nodes)
-      # MongoDB.configure_sharded_collections(node, new_resource.sharded_collections)
+      MongoDBSingle.configure_shards(node, node['mongod_single'])
+      MongoDBSingle.configure_sharded_collections(node, node['mongod_single'])
     end
     action :nothing
   end

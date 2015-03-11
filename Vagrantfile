@@ -14,27 +14,53 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       chef.cookbooks_path = %w[./berks-cookbooks ./cookbooks]
       chef.roles_path = "roles"
       chef.run_list = [
-        "recipe[mongodb-single-instance::default]"
+        "recipe[mongodb-single-instance::mongod]",
+        "recipe[mongodb-single-instance::replica]",
+        "recipe[mongodb-single-instance::configsvr]",
+        "recipe[mongodb-single-instance::mongos]"
       ]
       chef.json = {
         mongod_single: {
           mongos: {
-            port: 27100
+            port: 27100,
+            chunkSize: 1
           },
           configsvr: {
             port: 27101
           },
           replicasets: [
             {
-              name: "0",
+              name: "sh0",
               members: [
                 { port: 27200, opts: { arbiterOnly: true } },
-                { port: 27201 },
-                { port: 27202 }
+                { port: 27201, primary: true },
+                { port: 27202 },
+                { port: 27203 }
+              ]
+            },
+            {
+              name: "sh1",
+              members: [
+                { port: 27210, opts: { arbiterOnly: true } },
+                { port: 27211, primary: true },
+                { port: 27212 },
+                { port: 27213 }
+              ]
+            },
+            {
+              name: "sh2",
+              members: [
+                { port: 27220, opts: { arbiterOnly: true } },
+                { port: 27221, primary: true },
+                { port: 27222 },
+                { port: 27223 }
               ]
             }
-          ]
-
+          ],
+          shard_collections: {
+            "test.addressbook" => "name",
+            "mydatabase.calendar" => "date"
+          }
         }
       }
     end
