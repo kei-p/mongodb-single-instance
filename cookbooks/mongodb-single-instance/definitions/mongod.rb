@@ -27,7 +27,6 @@ define :mongod_instance,
   config['dbpath'] = '/var/lib/mongodb/%s' % name
   config['pidfilepath'] = '/var/run/mongodb/%s.pid' % name
   config['replSet'] = params[:replicaset_name]
-  config['arbiterOnly'] = "true" if params[:opts] && params[:opts]['arbiterOnly']
   new_resource.config = config
 
   new_resource.dbpath = config['dbpath']

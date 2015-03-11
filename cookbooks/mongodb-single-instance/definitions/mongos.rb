@@ -146,7 +146,7 @@ define :mongos_instance,
   # replicaset
   ruby_block 'config_replicaset' do
     block do
-      MongoDBSingle.configure_replicaset(node, node['mongod_single'])
+      # MongoDBSingle.configure_replicaset(node, node['mongod_single'])
     end
     action :nothing
   end
