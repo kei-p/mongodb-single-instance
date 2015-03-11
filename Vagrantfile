@@ -14,7 +14,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       chef.cookbooks_path = %w[./berks-cookbooks ./cookbooks]
       chef.roles_path = "roles"
       chef.run_list = [
-        "recipe[mongodb-single-instance::default]"
+        "recipe[mongodb-single-instance::mongod]",
+        "recipe[mongodb-single-instance::replica]",
+        "recipe[mongodb-single-instance::configsvr]",
+        "recipe[mongodb-single-instance::mongos]"
       ]
       chef.json = {
         mongod_single: {
