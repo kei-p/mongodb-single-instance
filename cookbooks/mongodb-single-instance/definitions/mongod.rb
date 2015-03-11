@@ -26,7 +26,7 @@ define :mongod_instance,
   config['logpath'] = '/var/log/mongodb/%s.log' % name
   config['dbpath'] = '/var/lib/mongodb/%s' % name
   config['pidfilepath'] = '/var/run/mongodb/%s.pid' % name
-  config['nojournal'] = true
+  config['journal'] = true
   config['smallfiles'] = true
   config['replSet'] = params[:replicaset_name]
   new_resource.config = config
